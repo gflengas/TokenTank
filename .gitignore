@@ -1,0 +1,8 @@
+*.plasmoid
+__pycache__/
+*.py[cod]
+*.qmlc
+.qmlcache/
+.codex/
+.agents/
+.aws/

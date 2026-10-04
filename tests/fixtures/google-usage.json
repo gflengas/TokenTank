@@ -1,0 +1,57 @@
+{
+  "provider": "antigravity",
+  "rateWindowLabels": {
+    "primary": "Gemini Models",
+    "secondary": "Claude and GPT"
+  },
+  "usage": {
+    "primary": {
+      "usedPercent": 0,
+      "windowMinutes": 300,
+      "resetsAt": "2030-01-02T12:00:00Z"
+    },
+    "secondary": {
+      "usedPercent": 0,
+      "windowMinutes": 300,
+      "resetsAt": "2030-01-02T12:00:00Z"
+    },
+    "extraRateWindows": [
+      {
+        "id": "antigravity-quota-summary-gemini-5h",
+        "title": "Gemini 5-hour",
+        "window": {
+          "usedPercent": 0,
+          "windowMinutes": 300,
+          "resetsAt": "2030-01-02T12:00:00Z"
+        }
+      },
+      {
+        "id": "antigravity-quota-summary-gemini-weekly",
+        "title": "Gemini weekly",
+        "window": {
+          "usedPercent": 0,
+          "windowMinutes": 10080,
+          "resetsAt": "2030-01-08T12:00:00Z"
+        }
+      },
+      {
+        "id": "antigravity-quota-summary-3p-5h",
+        "title": "Claude/GPT 5-hour",
+        "window": {
+          "usedPercent": 0,
+          "windowMinutes": 300,
+          "resetsAt": "2030-01-02T12:00:00Z"
+        }
+      },
+      {
+        "id": "antigravity-quota-summary-3p-weekly",
+        "title": "Claude/GPT weekly",
+        "window": {
+          "usedPercent": 0,
+          "windowMinutes": 10080,
+          "resetsAt": "2030-01-08T12:00:00Z"
+        }
+      }
+    ]
+  }
+}
