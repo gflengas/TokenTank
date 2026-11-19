@@ -22,9 +22,9 @@ Window {
     property int phase: 0
     Tank.UsageData { id: decoder }
     function check(condition,message) { if(!condition) throw new Error(message); }
-    function find(item,name) {
-        if(item.objectName===name) return item;
-        for(var i=0;i<item.children.length;++i) { var match=find(item.children[i],name);if(match) return match; }
+    function find(item,name,text) {
+        if(item.objectName===name && (text===undefined || item.text===text)) return item;
+        for(var i=0;i<item.children.length;++i) { var match=find(item.children[i],name,text);if(match) return match; }
         return null;
     }
     function copy(value) { return JSON.parse(JSON.stringify(value)); }
@@ -48,10 +48,22 @@ Window {
     }
     Component.onCompleted: {
         try {
-            check(decoded.rows.length===2,"Google fixture did not become two bars");
+            check(decoded.rows.length===3,"Google fixture did not keep Argon separate from equal general weekly values");
             check(decoded.rows[0].label==="5h" && decoded.rows[1].label==="Weekly","Cadence labels/order incorrect");
             check(decoded.rows[0].remaining===100 && decoded.rows[1].remaining===100,"Remaining quota changed");
             check(decoded.rows[0].resetsAt===fixture.usage.extraRateWindows[0].window.resetsAt && decoded.rows[1].resetsAt===fixture.usage.extraRateWindows[1].window.resetsAt,"Reset values changed");
+            check(decoded.rows[2].label==="Gemini 4 Argon weekly" && decoded.rows[2].remaining===100,"Missing Argon quota");
+            var differentArgon=copy(fixture);
+            differentArgon.usage.extraRateWindows[4].window.usedPercent=65;
+            differentArgon.usage.extraRateWindows[4].window.resetsAt="2030-01-09T13:00:00Z";
+            var argonRows=usage(differentArgon).rows;
+            check(argonRows[1].remaining===100 && argonRows[2].remaining===35 && argonRows[2].resetsAt==="2030-01-09T13:00:00Z","Argon usage or reset overwrote the general weekly quota");
+            differentArgon.usage.extraRateWindows[4].usageKnown=false;
+            check(!usage(differentArgon).rows[2].known,"Unmeasured Argon quota rendered as known");
+            var argonOnly=copy(fixture);
+            argonOnly.usage.primary=null;
+            argonOnly.usage.extraRateWindows=[argonOnly.usage.extraRateWindows[4]];
+            check(usage(argonOnly).rows.length===1 && usage(argonOnly).rows[0].shortLabel==="Argon","Argon substituted for absent general quota");
             var conflict=copy(fixture);
             conflict.usage.primary.usedPercent=75;
             conflict.usage.extraRateWindows[0].window.usedPercent=20;
@@ -64,7 +76,7 @@ Window {
             check(usage(measured).rows[0].known && usage(measured).rows[0].remaining===75,"Measured fallback was ignored");
             var weekly=copy(fixture);
             weekly.usage.primary=copy(weekly.usage.extraRateWindows[1].window);
-            weekly.usage.extraRateWindows=weekly.usage.extraRateWindows.filter(function(e){return !/5h$/.test(e.id);});
+            weekly.usage.extraRateWindows=weekly.usage.extraRateWindows.filter(function(e){return !/5h$|argon/.test(e.id);});
             var weekRows=usage(weekly).rows;
             check(weekRows.length===1 && weekRows[0].label==="Weekly","Weekly-only plan fabricated a session bar");
             var legacy=copy(fixture);legacy.usage.extraRateWindows=[];
@@ -89,7 +101,7 @@ Window {
             check(history({daily:[{modelsUsed:["gemini-3-pro","claude-sonnet"],totalTokens:30}]}).tokens===null,"Mixed unseparated day became Gemini usage");
             check(history({daily:[{modelBreakdowns:[{modelName:"gemini-3-pro",totalTokens:20}]},{totalTokens:100}]}).partial,"Unattributed day did not mark history partial");
             check(history({daily:[]}).state==="empty","Absent Gemini history became zero");
-            console.warn("PASS: Gemini two-bar mapping, duplicate preference, unknown/weekly-only/legacy quotas, Gemini-only fuel and token history");
+            console.warn("PASS: separate Argon and general quotas, duplicate preference, unknown/weekly-only/legacy quotas, Gemini-only fuel and token history");
         } catch(error) { console.error("FAIL: "+error.message);Qt.exit(1); }
     }
     Timer {
@@ -100,7 +112,9 @@ Window {
             try {
                 if(root.phase===0) {
                     var text=popup.resetSummary(root.decoded.rows);
-                    root.check(text.indexOf("Claude")<0 && text.indexOf("GPT")<0 && text.indexOf("5h resets")>=0 && text.indexOf("Weekly resets")>=0,"Reset header was not filtered/shortened");
+                    root.check(text.indexOf("Claude")<0 && text.indexOf("GPT")<0 && text.indexOf("5h resets")>=0 && text.indexOf("Weekly resets")>=0 && text.indexOf("Gemini 4 Argon weekly resets")>=0,"Reset header did not distinguish Gemini quotas");
+                    var argonLabel=root.find(popup,"quotaLabel","Argon");
+                    root.check(argonLabel && argonLabel.visible && !argonLabel.truncated,"Argon bar label missing or clipped");
                     popup.toggleExpanded("antigravity");
                 } else {
                     root.check(root.find(popup,"providerDetails-antigravity").visible,"Google card did not expand");

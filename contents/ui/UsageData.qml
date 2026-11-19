@@ -166,13 +166,29 @@ QtObject {
         if (provider !== "antigravity")
             return windows;
 
-        windows = windows.filter(entry => /\bgemini\b/i.test((entry.label || "") + " " + (entry.id || "")));
         windows.sort(function (a, b) {
             const aKnown = data.usageKnown(a.window);
             const bKnown = data.usageKnown(b.window);
             return aKnown !== bKnown ? (aKnown ? -1 : 1) : a.priority - b.priority || (aKnown ? b.window.usedPercent - a.window.usedPercent : 0);
         });
-        return dedupeByCadence(windows);
+        const general = [];
+        const argon = [];
+        windows.forEach(function (entry) {
+            const id = entry.id || "";
+            const identity = entry.label + " " + id;
+            if (/^antigravity-quota-summary-gemini-argon(?:-|$)/.test(id) || /^Gemini 4 Argon weekly$/i.test(entry.label))
+                argon.push(entry);
+            else if (/\bgemini\b/i.test(identity) && !/\bargon\b/i.test(identity))
+                general.push(entry);
+        });
+
+        // Argon can share a reset cadence with general Gemini while drawing from a separate quota.
+        return dedupeByCadence(general).concat(dedupeByCadence(argon).map(entry => {
+            if (!/^Gemini 4 Argon\b/i.test(entry.label))
+                entry.label = "Gemini 4 Argon " + entry.label.toLowerCase();
+            entry.shortLabel = /^Gemini 4 Argon weekly$/i.test(entry.label) ? "Argon" : "";
+            return entry;
+        }));
     }
 
     function decodeUsage(stdout, provider) {
@@ -193,6 +209,8 @@ QtObject {
         var fuelRows = [];
         data.quotaWindows(record, provider).forEach(function (entry) {
             var row = data.windowRow(entry.window, entry.label);
+            if (entry.shortLabel)
+                row.shortLabel = entry.shortLabel;
             rows.push(row);
             var pace = paceByWindow[entry.key];
             if (!pace || !row.known)

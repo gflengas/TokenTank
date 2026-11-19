@@ -196,7 +196,7 @@ Item {
                                             delegate: RowLayout {
                                                 id: quota
                                                 required property var modelData
-                                                readonly property string displayLabel: popup.quotaLabel(modelData.label)
+                                                readonly property string displayLabel: modelData.shortLabel || popup.quotaLabel(modelData.label)
                                                 readonly property string remainingText: modelData.known ? Math.round(modelData.remaining) + "% left" : "Unavailable"
                                                 Layout.fillWidth: true
                                                 spacing: Kirigami.Units.smallSpacing * 2
@@ -215,7 +215,7 @@ Item {
                                                         objectName: "quotaLabelToolTip"
                                                         text: quota.modelData.label
                                                         textFormat: Text.PlainText
-                                                        visible: labelHover.hovered && quotaLabel.truncated
+                                                        visible: labelHover.hovered && (quotaLabel.truncated || !!quota.modelData.shortLabel)
                                                     }
                                                 }
 
@@ -228,7 +228,7 @@ Item {
                                                     radius: 3
                                                     color: Qt.alpha(Kirigami.Theme.textColor, 0.12)
                                                     Accessible.role: Accessible.ProgressBar
-                                                    Accessible.name: quota.displayLabel
+                                                    Accessible.name: quota.modelData.shortLabel ? quota.modelData.label : quota.displayLabel
                                                     Accessible.description: quota.remainingText
 
                                                     Rectangle {

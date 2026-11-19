@@ -51,6 +51,15 @@
           "windowMinutes": 10080,
           "resetsAt": "2030-01-08T12:00:00Z"
         }
+      },
+      {
+        "id": "antigravity-quota-summary-gemini-argon-wtu-weekly",
+        "title": "Gemini 4 Argon weekly",
+        "window": {
+          "usedPercent": 0,
+          "windowMinutes": 10080,
+          "resetsAt": "2030-01-08T12:00:00Z"
+        }
       }
     ]
   }

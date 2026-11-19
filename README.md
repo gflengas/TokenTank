@@ -15,7 +15,7 @@ For now, these four subscriptions are supported because they are the ones I use 
 | z.ai / GLM Coding Plan | `zai` |
 | Google / Gemini through Antigravity | `antigravity` |
 
-The Google card shows Gemini usage only. Disconnected providers are hidden. CodexBar supports more providers; TokenTank currently focuses on these four.
+The Google card shows Gemini usage only, with a separate Gemini 4 Argon weekly bar when CodexBar reports it. Disconnected providers are hidden. CodexBar supports more providers; TokenTank currently focuses on these four.
 
 ## How it works
 
