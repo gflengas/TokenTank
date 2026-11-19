@@ -112,7 +112,13 @@ Window {
             try {
                 if(root.phase===0) {
                     var text=popup.resetSummary(root.decoded.rows);
-                    root.check(text.indexOf("Claude")<0 && text.indexOf("GPT")<0 && text.indexOf("5h resets")>=0 && text.indexOf("Weekly resets")>=0 && text.indexOf("Gemini 4 Argon weekly resets")>=0,"Reset header did not distinguish Gemini quotas");
+                    root.check(text===popup.resetText(root.decoded.rows[0])+"  ·  "+popup.resetText(root.decoded.rows[1]),"Reset header did not omit the duplicate Argon reset");
+                    const rows=root.copy(root.decoded.rows);
+                    rows[2].resetsAt="2030-01-08T13:00:00+01:00";
+                    root.check(popup.resetSummary(rows)===text,"Equivalent timestamps with different offsets repeated the Argon reset");
+                    rows[2].resetsAt="2030-01-09T13:00:00Z";
+                    root.check(popup.resetSummary(rows)===text+"  ·  "+popup.resetText(rows[2]),"A distinct Argon reset went missing");
+                    root.check(popup.resetSummary([rows[2]])===popup.resetText(rows[2]),"Argon-only reset went missing");
                     var argonLabel=root.find(popup,"quotaLabel","Argon");
                     root.check(argonLabel && argonLabel.visible && !argonLabel.truncated,"Argon bar label missing or clipped");
                     popup.toggleExpanded("antigravity");

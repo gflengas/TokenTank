@@ -57,7 +57,10 @@ Item {
     }
 
     function resetSummary(rows) {
-        return rows.map(row => popup.resetText(row)).join("  ·  ");
+        const weekly = rows.find(row => row.label === "Weekly");
+        const weeklyReset = weekly ? Date.parse(weekly.resetsAt) : NaN;
+        return rows.filter(row => row.shortLabel !== "Argon" || Date.parse(row.resetsAt) !== weeklyReset)
+                   .map(row => popup.resetText(row)).join("  ·  ");
     }
 
     function statusText(result) {
