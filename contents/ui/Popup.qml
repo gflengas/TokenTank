@@ -57,9 +57,7 @@ Item {
     }
 
     function resetSummary(rows) {
-        const weekly = rows.find(row => row.label === "Weekly");
-        const weeklyReset = weekly ? Date.parse(weekly.resetsAt) : NaN;
-        return rows.filter(row => row.shortLabel !== "Argon" || Date.parse(row.resetsAt) !== weeklyReset)
+        return rows.filter(row => !/^Gemini 4 Argon\b/i.test(row.label))
                    .map(row => popup.resetText(row)).join("  ·  ");
     }
 
@@ -184,7 +182,7 @@ Item {
                                         opacity: provider.providerData.loading && provider.providerData.rows.length > 0 ? 0.6 : 1
 
                                         PlasmaComponents.Label {
-                                            visible: provider.providerData.rows.length > 0
+                                            visible: text.length > 0
                                             text: popup.resetSummary(provider.providerData.rows)
                                             font: Kirigami.Theme.smallFont
                                             opacity: 0.7
